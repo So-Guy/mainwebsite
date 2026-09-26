@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archive — Selected Work</title>
+<style>
+  :root{
+    --black:#0a0a0a;
+    --white:#fafafa;
+    --gray-mid:#8a8a8a;
+    --gray-line-dark:#2a2a2a;
+    --gray-line-light:#d8d8d8;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--white);
+    color:var(--black);
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight:400;
+    line-height:1.4;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{color:inherit;text-decoration:none;}
+
+  ::selection{background:var(--black);color:var(--white);}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky;
+    top:0;
+    z-index:40;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:22px 28px;
+    background:var(--white);
+    border-bottom:1px solid var(--gray-line-light);
+  }
+
+  .logo{
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:0.02em;
+  }
+
+  nav{display:flex;gap:28px;}
+
+  nav a{
+    font-size:13px;
+    position:relative;
+    padding-bottom:2px;
+  }
+
+  nav a::after{
+    content:"";
+    position:absolute;
+    left:0;bottom:0;
+    width:100%;
+    height:1px;
+    background:var(--black);
+    transform:scaleX(0);
+    transform-origin:right;
+    transition:transform .35s var(--ease);
+  }
+
+  nav a:hover::after{transform:scaleX(1);transform-origin:left;}
+
+  /* ---------- hero ---------- */
+  .hero{
+    background:var(--black);
+    color:var(--white);
+    min-height:78vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    padding:14vh 28px 8vh;
+  }
+
+  .hero p.eyebrow{
+    font-size:13px;
+    color:var(--gray-mid);
+    margin-bottom:24px;
+    max-width:340px;
+  }
+
+  .hero h1{
+    font-size:clamp(42px,9vw,120px);
+    font-weight:700;
+    letter-spacing:-0.02em;
+    line-height:0.92;
+    max-width:14ch;
+  }
+
+  .hero .meta{
+    margin-top:40px;
+    display:flex;
+    gap:40px;
+    font-size:13px;
+    color:var(--gray-mid);
+    flex-wrap:wrap;
+  }
+
+  /* ---------- section shell ---------- */
+  section{padding:9vh 28px;}
+
+  .section-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:48px;
+    border-bottom:1px solid var(--gray-line-light);
+    padding-bottom:20px;
+  }
+
+  .section-head h2{
+    font-size:22px;
+    font-weight:700;
+  }
+
+  .section-head span{
+    font-size:13px;
+    color:var(--gray-mid);
+  }
+
+  /* ---------- project grid ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:1px;
+    background:var(--gray-line-light);
+    border:1px solid var(--gray-line-light);
+  }
+
+  @media(min-width:720px){
+    .grid{grid-template-columns:1fr 1fr;}
+  }
+
+  .card{
+    background:var(--white);
+    padding:36px 28px;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+    min-height:260px;
+    opacity:0;
+    transform:translateY(24px);
+    transition:opacity .6s var(--ease), transform .6s var(--ease),
+               background .3s ease, color .3s ease;
+  }
+
+  .card.visible{opacity:1;transform:translateY(0);}
+
+  .card:hover{
+    background:var(--black);
+    color:var(--white);
+  }
+
+  .card .thumb{
+    width:100%;
+    height:140px;
+    background:var(--gray-line-light);
+    transition:background .3s ease;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .card:hover .thumb{background:var(--gray-line-dark);}
+
+  .card .thumb::after{
+    content:attr(data-index);
+    position:absolute;
+    bottom:10px;
+    right:14px;
+    font-size:12px;
+    color:var(--gray-mid);
+  }
+
+  .card h3{
+    font-size:20px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+
+  .card .tags{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    font-size:12px;
+    color:var(--gray-mid);
+  }
+
+  .card:hover .tags{color:#c9c9c9;}
+
+  .card p.desc{
+    font-size:14px;
+    color:var(--gray-mid);
+    max-width:44ch;
+  }
+
+  .card:hover p.desc{color:#d8d8d8;}
+
+  .card .open{
+    margin-top:auto;
+    font-size:13px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  /* ---------- modal ---------- */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(10,10,10,0.4);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .35s var(--ease);
+    z-index:100;
+  }
+
+  .modal-overlay.active{opacity:1;pointer-events:auto;}
+
+  .modal{
+    position:fixed;
+    left:0;right:0;bottom:0;
+    max-height:92vh;
+    background:var(--white);
+    z-index:101;
+    transform:translateY(100%);
+    transition:transform .5s var(--ease);
+    overflow-y:auto;
+    padding:40px 28px 60px;
+  }
+
+  .modal.active{transform:translateY(0);}
+
+  .modal-inner{max-width:760px;margin:0 auto;}
+
+  .modal-close{
+    position:sticky;
+    top:0;
+    display:flex;
+    justify-content:flex-end;
+    margin-bottom:20px;
+  }
+
+  .modal-close button{
+    background:none;
+    border:1px solid var(--gray-line-light);
+    width:36px;height:36px;
+    font-size:16px;
+    cursor:pointer;
+    transition:background .25s ease, color .25s ease;
+  }
+
+  .modal-close button:hover{background:var(--black);color:var(--white);}
+
+  .modal .thumb-large{
+    width:100%;
+    height:280px;
+    background:var(--gray-line-light);
+    margin-bottom:32px;
+  }
+
+  .modal h2{
+    font-size:clamp(28px,5vw,44px);
+    font-weight:700;
+    letter-spacing:-0.02em;
+    margin-bottom:16px;
+  }
+
+  .modal .tags{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    font-size:12px;
+    color:var(--gray-mid);
+    margin-bottom:28px;
+  }
+
+  .modal p.body-text{
+    font-size:15px;
+    line-height:1.7;
+    max-width:64ch;
+    color:#3a3a3a;
+    margin-bottom:32px;
+  }
+
+  .modal .links{
+    display:flex;
+    gap:24px;
+    border-top:1px solid var(--gray-line-light);
+    padding-top:24px;
+  }
+
+  .modal .links a{
+    font-size:14px;
+    font-weight:700;
+    position:relative;
+    padding-bottom:2px;
+  }
+
+  .modal .links a::after{
+    content:"";
+    position:absolute;
+    left:0;bottom:0;
+    width:100%;
+    height:1px;
+    background:var(--black);
+    transform:scaleX(0);
+    transform-origin:right;
+    transition:transform .35s var(--ease);
+  }
+
+  .modal .links a:hover::after{transform:scaleX(1);transform-origin:left;}
+
+  /* ---------- footer ---------- */
+  footer{
+    background:var(--black);
+    color:var(--white);
+    padding:60px 28px 40px;
+    display:flex;
+    flex-direction:column;
+    gap:32px;
+  }
+
+  footer .row{
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:20px;
+  }
+
+  footer .links{
+    display:flex;
+    gap:24px;
+    flex-wrap:wrap;
+    font-size:13px;
+  }
+
+  footer .links a{position:relative;padding-bottom:2px;}
+
+  footer .links a::after{
+    content:"";
+    position:absolute;
+    left:0;bottom:0;
+    width:100%;
+    height:1px;
+    background:var(--white);
+    transform:scaleX(0);
+    transform-origin:right;
+    transition:transform .35s var(--ease);
+  }
+
+  footer .links a:hover::after{transform:scaleX(1);transform-origin:left;}
+
+  footer .fine{
+    font-size:12px;
+    color:var(--gray-mid);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; scroll-behavior:auto !important;}
+    .card{opacity:1;transform:none;}
+  }
+
+  :focus-visible{outline:2px solid var(--black);outline-offset:2px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ARCHIVE</div>
+
+</header>
+
+<section class="hero">
+  <p class="eyebrow">A running record of things built, shipped, and shelved.</p>
+  <h1>Selected work, kept in one place.</h1>
+  <div class="meta">
+    <span>12 projects</span>
+    <span>2022 — 2026</span>
+    <span>Updated regularly</span>
+  </div>
+</section>
+
+<section>
+  <div class="section-head">
+    <h2>Projects</h2>
+    <span id="count-label">01 — 06</span>
+  </div>
+  <div class="grid" id="project-grid"></div>
+</section>
+
+<footer>
+  <div class="row">
+    <div class="logo" style="color:var(--white);">ARCHIVE</div>
+    <div class="links">
+      <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+      <a href="mailto:hello@example.com">Email</a>
+      <a href="#" >Twitter</a>
+      <a href="#">LinkedIn</a>
+    </div>
+  </div>
+  <div class="fine">&copy; 2026. Built and maintained by hand.</div>
+</footer>
+
+<div class="modal-overlay" id="overlay"></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-inner">
+    <div class="modal-close"><button id="modal-close-btn" aria-label="Close">&times;</button></div>
+    <div class="thumb-large"></div>
+    <h2 id="modal-title"></h2>
+    <div class="tags" id="modal-tags"></div>
+    <p class="body-text" id="modal-desc"></p>
+    <div class="links" id="modal-links"></div>
+  </div>
+</div>
+
+<script>
+  const projects = [
+    {
+      title: "Field Notes",
+      tags: ["Web App", "TypeScript"],
+      desc: "A minimal note-taking tool built around offline-first sync and keyboard-only navigation.",
+      full: "Field Notes started as a personal itch — most note apps get in the way of writing. Built with a local-first storage layer and a command-palette interface, it syncs across devices without ever requiring an account. The whole interaction model is keyboard-driven, with mouse support treated as a secondary path rather than the default.",
+      repo: "#", demo: "#"
+    },
+    {
+      title: "Halftone",
+      tags: ["Canvas", "Generative Art"],
+      desc: "A browser-based generative art tool for producing halftone print patterns from photographs.",
+      full: "Halftone converts uploaded images into configurable dot, line, and cross-hatch patterns entirely client-side using Canvas and Web Workers. It grew out of a print run for a small zine and was generalized into a public tool afterward. Export is available at print resolution as SVG or PNG.",
+      repo: "#", demo: "#"
+    },
+    {
+      title: "Ledger",
+      tags: ["CLI", "Rust"],
+      desc: "A plain-text accounting tool for tracking personal finances from the command line.",
+      full: "Ledger reads and writes a simple plain-text format for double-entry bookkeeping, inspired by older command-line accounting tools but rebuilt for speed in Rust. It supports multi-currency accounts, recurring transactions, and generates monthly reports as Markdown.",
+      repo: "#", demo: "#"
+    },
+    {
+      title: "Quietroom",
+      tags: ["iOS", "Swift"],
+      desc: "A distraction-free writing app for iOS with a single view and no settings screen.",
+      full: "Quietroom is intentionally limited: one document at a time, one font, one accent color, and autosave with no manual save action. The constraint was the point — every feature request was tested against whether it would make the app quieter or louder.",
+      repo: "#", demo: "#"
+    },
+    {
+      title: "Signal Map",
+      tags: ["Data Viz", "D3.js"],
+      desc: "An interactive map visualizing public transit reliability data across three cities.",
+      full: "Signal Map pulls historical transit delay data and renders it as an animated choropleth, letting riders compare route reliability across time of day and season. Built with D3 and a custom tile renderer to keep the bundle small enough to load on mobile networks.",
+      repo: "#", demo: "#"
+    },
+    {
+      title: "Foundry",
+      tags: ["Design System", "React"],
+      desc: "An internal component library and design system built for a small product team.",
+      full: "Foundry is a token-driven component library built to keep a four-person product team consistent without a dedicated designer reviewing every screen. It ships with Figma-to-code token sync and a visual regression suite run on every pull request.",
+      repo: "#", demo: "#"
+    }
+  ];
+
+  const grid = document.getElementById('project-grid');
+  const countLabel = document.getElementById('count-label');
+  countLabel.textContent = `01 — ${String(projects.length).padStart(2,'0')}`;
+
+  projects.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.tabIndex = 0;
+    card.setAttribute('role','button');
+    card.setAttribute('aria-label', `Open project: ${p.title}`);
+    card.innerHTML = `
+      <div class="thumb" data-index="${String(i+1).padStart(2,'0')}"></div>
+      <h3>${p.title}</h3>
+      <div class="tags">${p.tags.map(t=>`<span>${t}</span>`).join('')}</div>
+      <p class="desc">${p.desc}</p>
+      <span class="open">View project &#8594;</span>
+    `;
+    card.addEventListener('click', () => openModal(p));
+    card.addEventListener('keypress', (e) => { if(e.key === 'Enter') openModal(p); });
+    grid.appendChild(card);
+  });
+
+  // scroll-triggered fade-in
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.card').forEach(c => io.observe(c));
+
+  // modal logic
+  const overlay = document.getElementById('overlay');
+  const modal = document.getElementById('modal');
+  const modalTitle = document.getElementById('modal-title');
+  const modalTags = document.getElementById('modal-tags');
+  const modalDesc = document.getElementById('modal-desc');
+  const modalLinks = document.getElementById('modal-links');
+  let lastFocused = null;
+
+  function openModal(p){
+    lastFocused = document.activeElement;
+    modalTitle.textContent = p.title;
+    modalTags.innerHTML = p.tags.map(t=>`<span>${t}</span>`).join('');
+    modalDesc.textContent = p.full;
+    modalLinks.innerHTML = `
+      <a href="${p.repo}" target="_blank" rel="noopener">GitHub Repo</a>
+    `;
+    overlay.classList.add('active');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('modal-close-btn').focus();
+  }
+
+  function closeModal(){
+    overlay.classList.remove('active');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    if (lastFocused) lastFocused.focus();
+  }
+
+  overlay.addEventListener('click', closeModal);
+  document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+  });
+</script>
+
+</body>
+</html>
